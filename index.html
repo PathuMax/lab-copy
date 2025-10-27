@@ -47,9 +47,9 @@ async function handleKeyPress(e){
   const key = e.key;
   let file = null;
 
-  if(key === '1') file = 'program.txt';
-  else if(key === '2') file = 'program1.txt';
-  else if(key === '3') file = 'program2.txt';
+  if(key === '6') file = 'program.txt';
+  else if(key === '5') file = 'program1.txt';
+  else if(key === '4') file = 'program2.txt';
   else return;
 
   const program = await fetchProgram(file);
