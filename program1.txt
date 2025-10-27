@@ -1,0 +1,39 @@
+server.py:
+
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/data', methods=['POST'])
+def receive_data():
+    temperature = request.form.get('temperature')
+    humidity = request.form.get('humidity')
+    print(f"Temperature: {temperature}°C  Humidity: {humidity}%")
+    return "Data received", 200
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000)
+
+
+
+arduino.py:
+
+import requests
+import time
+import random
+
+server_url = "http://127.0.0.1:5000/data"
+
+while True:
+    temperature = random.randint(20, 30)  # Simulated °C
+    humidity = random.randint(40, 70)     # Simulated %
+    data = {'temperature': temperature, 'humidity': humidity}
+
+    try:
+        response = requests.post(server_url, data=data)
+        print(f"Sent -> Temperature: {temperature}°C, Humidity: {humidity}%, "
+              f"Server Response: {response.text}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+    time.sleep(5)  # Send every 5 seconds
