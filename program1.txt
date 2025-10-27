@@ -1,3 +1,5 @@
+pip install flask requests
+
 server.py:
 
 from flask import Flask, request
