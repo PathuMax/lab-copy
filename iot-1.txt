@@ -1,3 +1,7 @@
+
+https://www.tinkercad.com/things/knJ3mVTbF7g-1measure-temperature/editel?returnTo=%2Fdashboard%2Fdesigns%2Fcircuits&sharecode=qv-MIqWSU4mhMv2WoHVc1LJRBEBmZSEYAslOWJWuaK0
+
+
 int baselineTemp = 40, celsius, fahrenheit;
 unsigned long prevMillis = 0;
 int s = 3, m = 2, h = 11, d = 3, mo = 7, y = 2025;
