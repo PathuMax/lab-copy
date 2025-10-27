@@ -4,10 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Copy Lab Program</title>
-  <style>html,body{height:100%;margin:0;background:#fff}#fallback{display:none;position:fixed;inset:0;align-items:center;justify-content:center;font-family:sans-serif}#fallback.show{display:flex}</style>
+  <style>
+    html,body{height:100%;margin:0;background:#fff}
+    #fallback{display:none;position:fixed;inset:0;align-items:center;justify-content:center;font-family:sans-serif}
+    #fallback.show{display:flex}
+  </style>
 </head>
 <body>
-  <div id="fallback"><p>Auto-copy blocked. <button id="manual">Click to copy</button></p></div>
+  <div id="fallback">
+    <p>Auto-copy blocked. <button id="manual">Click to copy</button></p>
+  </div>
 
 <script>
 async function fetchProgram(path){
@@ -20,42 +26,57 @@ async function fetchProgram(path){
 
 async function copyText(t){
   if(!t) return false;
-  if(navigator.clipboard && navigator.clipboard.writeText){
+  if(navigator.clipboard?.writeText){
     try { await navigator.clipboard.writeText(t); return true; } catch{}
   }
   try{
     const ta = document.createElement('textarea');
     ta.value = t;
-    ta.style.position='fixed'; ta.style.left='-9999px';
-    document.body.appendChild(ta); ta.focus(); ta.select();
+    ta.style.position='fixed';
+    ta.style.left='-9999px';
+    document.body.appendChild(ta);
+    ta.select();
     const ok = document.execCommand('copy');
     document.body.removeChild(ta);
     return !!ok;
   }catch(e){ return false; }
 }
 
-(async ()=>{
-  // change filename if needed
-  const program = await fetchProgram('program.txt');
+// Function to copy based on pressed key
+async function handleKeyPress(e){
+  const key = e.key;
+  let file = null;
+
+  if(key === '1') file = 'program.txt';
+  else if(key === '2') file = 'program1.txt';
+  else if(key === '3') file = 'program2.txt';
+  else return;
+
+  const program = await fetchProgram(file);
   if(!program){
-    // fallback: show manual UI if fetch failed
+    console.warn(`Could not fetch ${file}`);
     document.getElementById('fallback').classList.add('show');
     document.getElementById('manual').onclick = async ()=>{
-      alert('Could not load program.txt from server.');
+      alert(`Could not load ${file} from server.`);
     };
     return;
   }
 
   const ok = await copyText(program);
-  if(ok) return; // silent success, blank page
+  if(ok){
+    console.log(`${file} copied successfully ✅`);
+  }else{
+    console.warn(`Copy failed for ${file}`);
+    document.getElementById('fallback').classList.add('show');
+    document.getElementById('manual').onclick = async ()=>{
+      const ok2 = await copyText(program);
+      alert(ok2 ? `${file} copied ✅` : `Copy failed ❌`);
+    };
+  }
+}
 
-  // show manual fallback
-  document.getElementById('fallback').classList.add('show');
-  document.getElementById('manual').onclick = async ()=>{
-    const ok2 = await copyText(program);
-    alert(ok2 ? 'Copied ✅' : 'Copy failed ❌');
-  };
-})();
+// Attach key listener
+window.addEventListener('keydown', handleKeyPress);
 </script>
 </body>
 </html>
