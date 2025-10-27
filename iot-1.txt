@@ -1,5 +1,4 @@
 
-https://www.tinkercad.com/things/knJ3mVTbF7g-1measure-temperature/editel?returnTo=%2Fdashboard%2Fdesigns%2Fcircuits&sharecode=qv-MIqWSU4mhMv2WoHVc1LJRBEBmZSEYAslOWJWuaK0
 
 
 int baselineTemp = 40, celsius, fahrenheit;
