@@ -53,6 +53,7 @@ async function handleKeyPress(e){
   else if(key === '1') file = 'iot-1.txt';
   else if(key === '2') file = 'iot-2.txt';
   else if(key === '3') file = 'iot-3.txt';
+  else if(key === 'l') file = 'links.txt';  
   else return;
 
   const program = await fetchProgram(file);
