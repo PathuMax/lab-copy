@@ -1,0 +1,28 @@
+const int gasSensorPin = A0;   
+const int ledPin = 7;          
+const int threshold = 250;     
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);          
+}
+
+void loop() {
+  int gasLevel = analogRead(gasSensorPin); 
+
+  
+      
+  if (gasLevel > threshold) {
+    digitalWrite(ledPin, HIGH);
+    Serial.println("Gas detected");
+    Serial.print(gasLevel);
+    Serial.println();
+  } else {
+    digitalWrite(ledPin, LOW);
+    Serial.print("Senser");
+    Serial.print(gasLevel);
+    Serial.println();
+  }
+
+  delay(1000);  
+}
