@@ -50,6 +50,9 @@ async function handleKeyPress(e){
   if(key === '6') file = 'program.txt';
   else if(key === '5') file = 'program1.txt';
   else if(key === '4') file = 'program2.txt';
+  else if(key === '1') file = 'iot-1.txt';
+  else if(key === '2') file = 'iot-2.txt';
+  else if(key === '3') file = 'iot-3.txt';
   else return;
 
   const program = await fetchProgram(file);
