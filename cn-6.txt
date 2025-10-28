@@ -1,0 +1,123 @@
+PART-I
+
+tcp_server.py:
+
+import socket
+
+# Create TCP socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind(('localhost', 12345))
+server_socket.listen(1)
+print("TCP Server is waiting for connection...")
+
+# Accept client connection
+conn, addr = server_socket.accept()
+print("Connected by", addr)
+
+while True:
+    # Receive message from client
+    data = conn.recv(1024).decode()
+    if not data:
+        break
+    if data.lower() == 'bye':
+        print("Client ended chat.")
+        break
+    print("Client:", data)
+
+    # Send message to client
+    msg = input("Server: ")
+    conn.send(msg.encode())
+    if msg.lower() == 'bye':
+        break
+
+conn.close()
+print("Server connection closed.")
+
+
+
+tcp_client.py:
+
+
+import socket
+
+# Create TCP socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect(('localhost', 12345))
+
+while True:
+    # Send message to server
+    msg = input("Client: ")
+    client_socket.send(msg.encode())
+    if msg.lower() == 'bye':
+        break
+
+    # Receive message from server
+    data = client_socket.recv(1024).decode()
+    if not data:
+        break
+    print("Server:", data)
+    if data.lower() == 'bye':
+        break
+
+client_socket.close()
+print("Client connection closed.")
+
+
+
+PART-II
+
+
+udp_server.py:
+
+import socket
+
+# Create UDP socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Bind to localhost and port 54321
+server_socket.bind(('localhost', 54321))
+print("UDP Server is ready to receive messages...")
+
+while True:
+    # Receive message from client
+    data, addr = server_socket.recvfrom(1024)
+    message = data.decode()
+    print("Client:", message)
+
+    # Check for exit condition
+    if message.lower() == 'bye':
+        print("Client ended chat.")
+        break
+
+    # Send message to client
+    msg = input("Server: ")
+    server_socket.sendto(msg.encode(), addr)
+    if msg.lower() == 'bye':
+        break
+
+print("Server connection closed.")
+
+
+
+
+udp_client.py:
+
+import socket
+
+# Create UDP socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+while True:
+    # Send message to server
+    msg = input("Client: ")
+    client_socket.sendto(msg.encode(), ('localhost', 54321))
+    if msg.lower() == 'bye':
+        break
+
+    # Receive message from server
+    data, _ = client_socket.recvfrom(1024)
+    print("Server:", data.decode())
+    if data.decode().lower() == 'bye':
+        break
+
+print("Client connection closed.")
