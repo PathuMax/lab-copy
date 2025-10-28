@@ -1,0 +1,46 @@
+import heapq
+
+INF = 999
+
+# ======== Distance Vector Routing ========
+def distance_vector(graph, n):
+    dist = [row[:] for row in graph]
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                if dist[i][j] > dist[i][k] + dist[k][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+    print("\n--- Distance Vector Routing ---")
+    for i in range(n):
+        print(f"From Node {i+1}:", dist[i])
+
+# ======== Link State Routing (Dijkstra) ========
+def dijkstra(graph, start):
+    n = len(graph)
+    visited = [False]*n
+    dist = [INF]*n
+    dist[start] = 0
+    pq = [(0, start)]
+    while pq:
+        d, u = heapq.heappop(pq)
+        if visited[u]: continue
+        visited[u] = True
+        for v in range(n):
+            if graph[u][v] != INF and dist[v] > d + graph[u][v]:
+                dist[v] = d + graph[u][v]
+                heapq.heappush(pq, (dist[v], v))
+    return dist
+
+# ======== Main ========
+n = int(input("Enter number of nodes: "))
+graph = []
+print("Enter cost matrix (use 999 for infinity):")
+for i in range(n):
+    graph.append(list(map(int, input(f"Row {i+1}: ").split())))
+
+distance_vector(graph, n)
+
+print("\n--- Link State Routing ---")
+for i in range(n):
+    dist = dijkstra(graph, i)
+    print(f"From Node {i+1}: {dist}")
