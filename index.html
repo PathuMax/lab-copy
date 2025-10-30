@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Copy Lab Program</title>
+  <title>Copy or Download Lab Program</title>
   <style>
     html,body{height:100%;margin:0;background:#fff}
     #fallback{display:none;position:fixed;inset:0;align-items:center;justify-content:center;font-family:sans-serif}
@@ -12,7 +12,7 @@
 </head>
 <body>
   <div id="fallback">
-    <p>Auto-copy blocked. <button id="manual">Click to copy</button></p>
+    <p>Action blocked. <button id="manual">Retry</button></p>
   </div>
 
 <script>
@@ -20,30 +20,19 @@ async function fetchFile(path){
   try{
     const res = await fetch(path, {cache: "no-store"});
     if(!res.ok) throw new Error("Failed to fetch " + path);
-
-    // Try text first, then fallback to base64 if binary
-    const contentType = res.headers.get("content-type") || "";
-    if (contentType.startsWith("text") || path.endsWith(".txt") || path.endsWith(".json") || path.endsWith(".html")) {
-      return await res.text();
-    } else {
-      // Non-text file (.pkt, .zip, etc.)
-      const blob = await res.blob();
-      return await blobToBase64(blob); // Base64 encode binary
-    }
-  } catch (err) {
-    console.error(err);
+    return await res.blob(); // fetch always as blob so we can decide later
+  }catch(e){
+    console.error(e);
     return null;
   }
 }
 
-// Helper: convert Blob to Base64 string
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+function isTextFile(filename){
+  return /\.(txt|html|css|js|json|py|java|c|cpp|md)$/i.test(filename);
+}
+
+async function blobToText(blob){
+  return await blob.text();
 }
 
 async function copyText(t){
@@ -64,34 +53,50 @@ async function copyText(t){
   }catch(e){ return false; }
 }
 
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 async function handleKeyPress(e){
   const key = e.key;
   let file = null;
 
-  // Map keys to files (any extension allowed)
   if(key === '1') file = 'program.txt';
-  else if(key === '4') file = 'sdn 4.pkt';
   else if(key === '3') file = 'sdn 3.pkt';
-  else return; // ignore other keys
+  else if(key === '4') file = 'sdn 4.pkt';
+  else return;
 
-  const data = await fetchFile(file);
-  if(!data){
+  const blob = await fetchFile(file);
+  if(!blob){
     console.warn(`Could not fetch ${file}`);
     document.getElementById('fallback').classList.add('show');
-    document.getElementById('manual').onclick = () => alert(`Could not load ${file} from server.`);
+    document.getElementById('manual').onclick = ()=>alert(`Could not load ${file} from server.`);
     return;
   }
 
-  const ok = await copyText(data);
-  if(ok){
-    console.log(`${file} copied successfully ✅`);
+  if(isTextFile(file)){
+    const text = await blobToText(blob);
+    const ok = await copyText(text);
+    if(ok) console.log(`${file} copied ✅`);
+    else {
+      console.warn(`Copy failed for ${file}`);
+      document.getElementById('fallback').classList.add('show');
+      document.getElementById('manual').onclick = async ()=>{
+        const ok2 = await copyText(text);
+        alert(ok2 ? `${file} copied ✅` : `Copy failed ❌`);
+      };
+    }
   } else {
-    console.warn(`Copy failed for ${file}`);
-    document.getElementById('fallback').classList.add('show');
-    document.getElementById('manual').onclick = async ()=>{
-      const ok2 = await copyText(data);
-      alert(ok2 ? `${file} copied ✅` : `Copy failed ❌`);
-    };
+    // Non-text file → download instead of copy
+    triggerDownload(blob, file);
+    console.log(`${file} downloaded 💾`);
   }
 }
 
