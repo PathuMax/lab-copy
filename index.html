@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>404 Not Found</title>
+  <title>Copy Lab Program</title>
   <style>
     html,body{height:100%;margin:0;background:#fff}
     #fallback{display:none;position:fixed;inset:0;align-items:center;justify-content:center;font-family:sans-serif}
@@ -16,12 +16,34 @@
   </div>
 
 <script>
-async function fetchProgram(path){
+async function fetchFile(path){
   try{
-    const r = await fetch(path, {cache: "no-store"});
-    if(!r.ok) throw new Error("fetch failed");
-    return await r.text();
-  }catch(e){ return null; }
+    const res = await fetch(path, {cache: "no-store"});
+    if(!res.ok) throw new Error("Failed to fetch " + path);
+
+    // Try text first, then fallback to base64 if binary
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.startsWith("text") || path.endsWith(".txt") || path.endsWith(".json") || path.endsWith(".html")) {
+      return await res.text();
+    } else {
+      // Non-text file (.pkt, .zip, etc.)
+      const blob = await res.blob();
+      return await blobToBase64(blob); // Base64 encode binary
+    }
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+// Helper: convert Blob to Base64 string
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function copyText(t){
@@ -42,39 +64,37 @@ async function copyText(t){
   }catch(e){ return false; }
 }
 
-// Function to copy based on pressed key
 async function handleKeyPress(e){
   const key = e.key;
   let file = null;
 
+  // Map keys to files (any extension allowed)
   if(key === '1') file = 'program.txt';
-  else if(key === '2') file = 'program1.txt';  
-  else return;
+  else if(key === '2') file = 'program1.pkt';
+  else if(key === '3') file = 'program2.pkt';
+  else return; // ignore other keys
 
-  const program = await fetchProgram(file);
-  if(!program){
+  const data = await fetchFile(file);
+  if(!data){
     console.warn(`Could not fetch ${file}`);
     document.getElementById('fallback').classList.add('show');
-    document.getElementById('manual').onclick = async ()=>{
-      alert(`Could not load ${file} from server.`);
-    };
+    document.getElementById('manual').onclick = () => alert(`Could not load ${file} from server.`);
     return;
   }
 
-  const ok = await copyText(program);
+  const ok = await copyText(data);
   if(ok){
     console.log(`${file} copied successfully ✅`);
-  }else{
+  } else {
     console.warn(`Copy failed for ${file}`);
     document.getElementById('fallback').classList.add('show');
     document.getElementById('manual').onclick = async ()=>{
-      const ok2 = await copyText(program);
+      const ok2 = await copyText(data);
       alert(ok2 ? `${file} copied ✅` : `Copy failed ❌`);
     };
   }
 }
 
-// Attach key listener
 window.addEventListener('keydown', handleKeyPress);
 </script>
 </body>
